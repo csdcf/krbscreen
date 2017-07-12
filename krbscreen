@@ -1,0 +1,54 @@
+#!/usr/bin/pagsh +x
+#
+#
+# Original author: Brian Roberts, v2.0 written by Al Biheiri
+# bjr@cs ; al@cs
+#
+# support@cs.stanford.edu for help
+
+
+#this is a function because we dont want to run always
+do_stuff () {
+	aklog
+
+	NEWKRB5=/tmp/krb5cc_${VAR}_screen
+	NEWKRB4=/tmp/tkt_${VAR}_screen
+
+	# cp $KRB5CCNAME $NEWKRB5
+	if [ -f "$KRB5CCNAME" ]; then
+		cp `echo $KRB5CCNAME | awk -F":" '{ print $2 }'` $NEWKRB5
+	fi
+	if [ -f "$KRBTKFILE" ]; then
+		cp $KRBTKFILE $NEWKRB4
+	fi
+
+	KRB5CCNAME=$NEWKRB5; export KRB5CCNAME
+	KRBTKFILE=$NEWKRB4; export KRBTKFILE
+}
+
+
+
+
+case $1 in
+	'-h'|'--h'|'HELP'|'help'|'--help'|'--HELP'|'-help'|'-HELP')
+		cat <<EOF
+Krbscreen is a wrapper which runs screen in a separate Kerberos PAG.
+After you run it, please don't forget to run the --> reauth <-- command to keep your AFS token active.
+
+Usage: $0
+optional: $0 -S MYSESSION
+
+EOF
+;;
+	'-S')
+		#the VAR= part is for the function to rename the screen appropriately (see the function area)
+		VAR=$2
+		do_stuff
+		screen -S $2
+		;;
+	*)
+		VAR=$USER
+		do_stuff
+		screen -S $VAR
+		;;
+esac
